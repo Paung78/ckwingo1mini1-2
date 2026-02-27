@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <title>CK Wingo 1 Mini V1.2 - Key Unlock</title>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --ck12-bg: #0f1419;
+            --ck12-surface: rgba(20, 28, 38, 0.94);
+            --ck12-accent: #38bdf8;
+            --ck12-accent-alt: #93c5fd;
+            --ck12-border: rgba(56, 189, 248, 0.3);
+            --ck12-text: #f0f9ff;
+            --ck12-muted: rgba(240, 249, 255, 0.7);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--ck12-bg);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(56, 189, 248, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(147, 197, 253, 0.08), transparent);
+            min-height: 100vh;
+            color: var(--ck12-text);
+            padding: 20px;
+            padding-top: calc(20px + env(safe-area-inset-top));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+        }
+
+        /* ========== V1.2 Key Unlock Gate - CK distinct design ========== */
+        #gate {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+        }
+        .ck12-unlock-card {
+            width: min(420px, 100%);
+            padding: 40px 32px;
+            background: var(--ck12-surface);
+            border: 1px solid var(--ck12-border);
+            border-radius: 24px;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(56, 189, 248, 0.1);
+            text-align: center;
+        }
+        .ck12-unlock-logo {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            color: var(--ck12-accent);
+            margin-bottom: 12px;
+        }
+        .ck12-unlock-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--ck12-text);
+            margin-bottom: 6px;
+        }
+        .ck12-unlock-sub {
+            font-size: 0.9rem;
+            color: var(--ck12-muted);
+            margin-bottom: 28px;
+            font-weight: 500;
+        }
+        .ck12-input-wrap { margin-bottom: 20px; }
+        .ck12-key-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid var(--ck12-border);
+            border-radius: 14px;
+            color: var(--ck12-text);
+            font-size: 1rem;
+            font-family: 'Outfit', monospace;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+        .ck12-key-input::placeholder { color: rgba(240, 249, 255, 0.4); }
+        .ck12-key-input:focus {
+            outline: none;
+            border-color: var(--ck12-accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+        .ck12-activate-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--ck12-accent), #0ea5e9);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .ck12-activate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.4);
+        }
+        .ck12-activate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .ck12-timer {
+            margin-top: 20px;
+            padding: 14px;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--ck12-accent);
+            display: none;
+        }
+        .ck12-success {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(56, 189, 248, 0.15);
+            border-radius: 12px;
+            color: var(--ck12-accent);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: none;
+        }
+        .ck12-telegram { margin-top: 24px; }
+        .ck12-telegram a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid var(--ck12-border);
+            border-radius: 12px;
+            color: var(--ck12-accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .ck12-telegram a:hover { background: rgba(56, 189, 248, 0.2); }
+
+        /* ========== Results Container - Ck30 style ========== */
+        .results-container {
+            display: none;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 16px;
+            background: rgba(20, 28, 38, 0.9);
+            border-radius: 16px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            position: relative;
+        }
+        .results-container.unlocked { display: block; animation: ck12-fadeIn 0.3s ease; }
+        @keyframes ck12-fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .results-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+        .results-header-left { flex: 1; }
+        .results-container h1 {
+            font-size: clamp(1.2rem, 3.5vw, 1.6rem);
+            font-weight: 700;
+            color: var(--ck12-accent);
+            margin-bottom: 4px;
+        }
+        .results-container .ck12-subtitle { color: #ffffff; font-size: 0.9rem; font-weight: 500; }
+        .results-time-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            padding: 8px 14px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--ck12-accent);
+            white-space: nowrap;
+            display: none;
+        }
+        .results-time-badge.visible { display: block; }
+        .ck12-anim-logo { font-size: 2rem; font-weight: 900; color: var(--ck12-accent); }
+        .ck12-bst-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 14px 20px;
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .ck12-bst-item { text-align: center; }
+        .ck12-bst-label { font-size: 0.7rem; color: #ffffff; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .ck12-bst-value { font-size: 1.4rem; font-weight: 800; color: #ffffff; }
+        .ck12-pred-box {
+            padding: 16px;
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .ck12-pred-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+        }
+        .ck12-pred-row:last-child { border-bottom: none; }
+        .ck12-pred-label { font-size: 0.8rem; color: #ffffff; font-weight: 600; }
+        .ck12-pred-value { font-size: 0.95rem; font-weight: 700; color: #ffffff; font-family: monospace; }
+        .ck12-pred-system-box {
+            padding: 16px;
+            background: rgba(56, 189, 248, 0.06);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .ck12-pred-system-title { font-size: 0.9rem; font-weight: 700; color: #ffffff; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); }
+        .ck12-pred-system-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.85rem; color: #ffffff; }
+        .ck12-pred-system-label { font-weight: 600; }
+        .ck12-pred-system-value { font-family: monospace; }
+        .ck12-pred-system-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 24px;
+            font-size: 0.95rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 600;
+        }
+        .ck12-pred-system-loading .dots { display: inline-flex; gap: 4px; }
+        .ck12-pred-system-loading .dots span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--ck12-accent);
+            animation: ck12-dot 1.4s ease-in-out infinite;
+        }
+        .ck12-pred-system-loading .dots span:nth-child(1) { animation-delay: 0s; }
+        .ck12-pred-system-loading .dots span:nth-child(2) { animation-delay: 0.2s; }
+        .ck12-pred-system-loading .dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes ck12-dot {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+            40% { opacity: 1; transform: scale(1.1); }
+        }
+        .ck12-pred-system-content { animation: ck12-fadeIn 0.4s ease; }
+        .ck12-win { color: #22c55e; font-weight: 700; }
+        .ck12-lose { color: #ef4444; font-weight: 700; }
+        .ck12-table-wrap {
+            background: rgba(56, 189, 248, 0.04);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .ck12-table-wrap table { width: 100%; border-collapse: collapse; }
+        .ck12-table-wrap th {
+            padding: 14px 12px;
+            background: rgba(56, 189, 248, 0.2);
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: left;
+        }
+        .ck12-table-wrap td {
+            padding: 12px;
+            border-top: 1px solid rgba(56, 189, 248, 0.12);
+            font-size: 0.85rem;
+            color: #ffffff;
+        }
+        .ck12-table-wrap tbody tr:hover { background: rgba(56, 189, 248, 0.1); }
+        .ck12-table-wrap .period-num { font-weight: 700; color: #ffffff; }
+        .ck12-table-wrap .result-big { color: #ffffff; font-weight: 700; }
+        .ck12-table-wrap .result-small { color: #ffffff; font-weight: 700; }
+        .ck12-last-update { text-align: center; font-size: 0.8rem; color: #ffffff; padding: 12px; }
+        .no-data { text-align: center; padding: 40px 20px; color: #ffffff; }
+
+        #status { display: none; padding: 12px; margin-bottom: 16px; border-radius: 12px; }
+        #status.loading { background: rgba(147, 197, 253, 0.1); color: var(--ck12-accent-alt); }
+        #status.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+        @media (max-width: 600px) {
+            .ck12-unlock-card { padding: 28px 20px; }
+            .ck12-table-wrap th, .ck12-table-wrap td { padding: 10px 8px; font-size: 0.75rem; }
+            .ck12-key-input { letter-spacing: 0.08em; }
+            .results-header { flex-direction: column; align-items: flex-start; }
+            .results-time-badge { position: static; margin-top: 8px; }
+            .ck12-bst-box { flex-wrap: wrap; gap: 12px; }
+            .ck12-pred-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+    <section id="gate">
+        <div class="ck12-unlock-card">
+            <div class="ck12-unlock-logo">LT</div>
+            <div class="ck12-unlock-title">Lottery Tricks Ai Perdition</div>
+            <div class="ck12-unlock-sub">Ck Lottery WinGo1 Prediction</div>
+            <div class="ck12-input-wrap">
+                <input type="text" id="keyInput" class="ck12-key-input" placeholder="ENTER ACCESS KEY" autocomplete="off">
+            </div>
+            <button class="ck12-activate-btn" id="activateBtn">
+                <i class="fas fa-unlock-alt"></i> UNLOCK
+            </button>
+            <div id="keyTimer" class="ck12-timer"></div>
+            <div id="keySuccess" class="ck12-success">Access Granted</div>
+            <div class="ck12-telegram">
+                <a href="https://t.me/LotteryTricksAiPrediction" target="_blank">
+                    <i class="fab fa-telegram"></i> JOIN TELEGRAM
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="results-container" id="resultsContainer">
+        <div class="results-header">
+            <div class="results-header-left">
+                <div class="ck12-anim-logo">LT</div>
+                <h1>Lottery Tricks Ai Perdition</h1>
+                <p class="ck12-subtitle">Ck Lottery WinGo1 - Prediction</p>
+            </div>
+            <div id="resultsTimeRemaining" class="results-time-badge"></div>
+        </div>
+        <div id="status" class="status"></div>
+
+        <div class="ck12-bst-box">
+            <div class="ck12-bst-item"><div class="ck12-bst-label">BIG</div><div class="ck12-bst-value" id="bigCount">0</div></div>
+            <div class="ck12-bst-item"><div class="ck12-bst-label">SMALL</div><div class="ck12-bst-value" id="smallCount">0</div></div>
+            <div class="ck12-bst-item"><div class="ck12-bst-label">TOTAL</div><div class="ck12-bst-value" id="totalCount">0</div></div>
+        </div>
+
+        <div class="ck12-pred-box">
+            <div class="ck12-pred-row">
+                <span class="ck12-pred-label">Next Period Number</span>
+                <span class="ck12-pred-value" id="predNextPeriod">-</span>
+            </div>
+            <div class="ck12-pred-row">
+                <span class="ck12-pred-label">Prediction</span>
+                <span class="ck12-pred-value" id="predValue">-</span>
+            </div>
+            <div class="ck12-pred-row">
+                <span class="ck12-pred-label">WinGo CD Time</span>
+                <span class="ck12-pred-value" id="wingoCD">60s</span>
+            </div>
+        </div>
+
+        <div class="ck12-pred-system-box">
+            <div class="ck12-pred-system-title">Prediction System</div>
+            <div id="predSystemContent"></div>
+        </div>
+
+        <div class="ck12-table-wrap">
+            <div id="resultsTable"></div>
+        </div>
+        <div id="lastUpdate" class="ck12-last-update"></div>
+    </div>
+
+    <script>
+        const ACCEPTED_KEY_TYPES = ['ck'];
+        const FIREBASE_PATH = 'ckwingo1/default';
+        const firebaseConfig = {
+            apiKey: "AIzaSyDj6z3O91NnlQ1zVdripiGhqQMsQhR4_ak",
+            authDomain: "ck30-35e97.firebaseapp.com",
+            databaseURL: "https://ck30-35e97-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "ck30-35e97",
+            storageBucket: "ck30-35e97.appspot.com",
+            messagingSenderId: "625630152314",
+            appId: "1:625630152314:web:c035009eec389371b51dc3",
+            measurementId: "G-6Z7DYPKHR2"
+        };
+        const loginConfig = {
+            apiKey: "AIzaSyAy3QvFmhKiOX38MZiINfZq2yYXGhb7uL8",
+            authDomain: "ck-adm.firebaseapp.com",
+            databaseURL: "https://ck-adm-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "ck-adm",
+            storageBucket: "ck-adm.appspot.com",
+            messagingSenderId: "192822942347",
+            appId: "1:192822942347:web:f27eee393e16c84544528e"
+        };
+
+        let db = null, loginDb = null, firebaseListener = null, keyStatusListener = null;
+        let serverOffset = 0, expireTime = parseInt(localStorage.getItem('expireTime')) || 0;
+        let activatedKeyId = localStorage.getItem('activatedKeyId') || null;
+        let timerInterval = null;
+        let wingoCDInterval = null;
+        let currentResults = [];
+        let lastPeriodKey = null;
+        let lastRenderedPeriodKey = null;
+        let predSystemTimeout = null;
+        let wingoCDSec = 60;
+
+        const getServerTime = () => Date.now() + serverOffset;
+
+        function initLoginFirebase() {
+            try {
+                if (!loginDb) {
+                    const app = firebase.initializeApp(loginConfig, 'loginCk');
+                    loginDb = app.database();
+                }
+                loginDb.ref(".info/serverTimeOffset").on("value", s => { serverOffset = s?.val() || 0; });
+                return true;
+            } catch (e) { console.error('Login Firebase error:', e); return false; }
+        }
+
+        function initFirebase() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
+                return true;
+            } catch (e) { console.error('Firebase init error:', e); return false; }
+        }
+
+        function activateKey() {
+            const key = document.getElementById('keyInput').value.trim().toUpperCase();
+            if (!key) { alert('Please enter an access key'); return; }
+            const btn = document.getElementById('activateBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            btn.disabled = true;
+            if (!loginDb && !initLoginFirebase()) {
+                btn.innerHTML = '<i class="fas fa-unlock-alt"></i> UNLOCK';
+                btn.disabled = false;
+                alert('Network error');
+                return;
+            }
+            loginDb.ref('keys/' + key).once('value').then(snapshot => {
+                btn.innerHTML = '<i class="fas fa-unlock-alt"></i> UNLOCK';
+                btn.disabled = false;
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (!ACCEPTED_KEY_TYPES.includes(data.keyType || '')) {
+                        const typeName = data.keyType === '6wingo' ? '6 Key Bot' : data.keyType === 'bigwin' ? 'BigWin Key Bot' : 'Unknown';
+                        alert('Invalid key type. This key is from ' + typeName + '. Use keys from CK Key Bot only.');
+                        return;
+                    }
+                    if (data.used) {
+                        alert('This key has already been used.');
+                        return;
+                    }
+                    const extra = (data.duration || 0) * 60 * 1000;
+                    expireTime = Math.max(getServerTime(), expireTime) + extra;
+                    localStorage.setItem('expireTime', expireTime);
+                    activatedKeyId = key;
+                    localStorage.setItem('activatedKeyId', key);
+                    loginDb.ref('keys/' + key).update({
+                        used: true,
+                        activatedAt: firebase.database.ServerValue.TIMESTAMP,
+                        expiresAt: expireTime
+                    });
+                    document.getElementById('keySuccess').style.display = 'block';
+                    document.getElementById('keyInput').value = '';
+                    startSession();
+                    startKeyMonitoring(key);
+                } else {
+                    alert('Invalid key');
+                }
+            }).catch(err => {
+                btn.innerHTML = '<i class="fas fa-unlock-alt"></i> UNLOCK';
+                btn.disabled = false;
+                alert('Network error. Try again.');
+            });
+        }
+
+        function startSession() {
+            if (timerInterval) clearInterval(timerInterval);
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const remaining = expireTime - getServerTime();
+            const gate = document.getElementById('gate');
+            const container = document.getElementById('resultsContainer');
+            const timerEl = document.getElementById('keyTimer');
+            const resultsTimeEl = document.getElementById('resultsTimeRemaining');
+
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('keySuccess').style.display = 'none';
+                if (timerEl) timerEl.style.display = 'none';
+                if (resultsTimeEl) { resultsTimeEl.classList.remove('visible'); resultsTimeEl.textContent = ''; }
+                if (wingoCDInterval) { clearInterval(wingoCDInterval); wingoCDInterval = null; }
+                if (predSystemTimeout) { clearTimeout(predSystemTimeout); predSystemTimeout = null; }
+                gate.style.display = 'flex';
+                container.classList.remove('unlocked');
+                localStorage.removeItem('expireTime');
+                localStorage.removeItem('activatedKeyId');
+                const keyToClean = activatedKeyId;
+                activatedKeyId = null;
+                if (firebaseListener && db) {
+                    db.ref(FIREBASE_PATH).off('value', firebaseListener);
+                    firebaseListener = null;
+                }
+                if (keyStatusListener && loginDb && keyToClean) {
+                    loginDb.ref('keys/' + keyToClean).off('value', keyStatusListener);
+                    keyStatusListener = null;
+                }
+                return;
+            }
+            const h = Math.floor(remaining / 3600000);
+            const m = Math.floor((remaining % 3600000) / 60000);
+            const s = Math.floor((remaining % 60000) / 1000);
+            const txt = `${h}h ${m}m ${s}s`;
+            if (timerEl) { timerEl.textContent = txt; timerEl.style.display = 'block'; }
+            if (resultsTimeEl) { resultsTimeEl.textContent = txt; resultsTimeEl.classList.add('visible'); }
+            gate.style.display = 'none';
+            container.classList.add('unlocked');
+            if (!firebaseListener) setTimeout(connectFirebase, 300);
+        }
+
+        function redirectToUnlock(reason) {
+            if (timerInterval) clearInterval(timerInterval);
+            if (wingoCDInterval) { clearInterval(wingoCDInterval); wingoCDInterval = null; }
+            if (predSystemTimeout) { clearTimeout(predSystemTimeout); predSystemTimeout = null; }
+            document.getElementById('resultsContainer').classList.remove('unlocked');
+            document.getElementById('gate').style.display = 'flex';
+            document.getElementById('keySuccess').style.display = 'none';
+            localStorage.removeItem('expireTime');
+            localStorage.removeItem('activatedKeyId');
+            const keyToClean = activatedKeyId;
+            activatedKeyId = null;
+            if (firebaseListener && db) { db.ref(FIREBASE_PATH).off('value', firebaseListener); firebaseListener = null; }
+            if (keyStatusListener && loginDb && keyToClean) {
+                loginDb.ref('keys/' + keyToClean).off('value', keyStatusListener);
+                keyStatusListener = null;
+            }
+            alert(reason || 'Session expired');
+        }
+
+        function startKeyMonitoring(keyId) {
+            if (!loginDb || !keyId) return;
+            if (keyStatusListener && activatedKeyId) {
+                loginDb.ref('keys/' + activatedKeyId).off('value', keyStatusListener);
+            }
+            keyStatusListener = loginDb.ref('keys/' + keyId).on('value', snapshot => {
+                if (!snapshot.exists()) {
+                    if (expireTime - getServerTime() > 0) return;
+                    redirectToUnlock('Key expired');
+                    return;
+                }
+                const d = snapshot.val();
+                if (d.used && d.expiresAt && d.expiresAt < getServerTime()) {
+                    redirectToUnlock('Key expired');
+                } else if (d.used === false && d.claimed === false && keyId === activatedKeyId) {
+                    redirectToUnlock('Key deactivated');
+                }
+            });
+        }
+
+        function classifyBigSmall(n) {
+            if (n == null) return null;
+            const num = parseInt(n);
+            return isNaN(num) ? null : (num >= 5 ? 'BIG' : 'SMALL');
+        }
+
+        function calculatePrediction(historyData) {
+            if (!historyData || historyData.length < 2) return null;
+            const availableResults = historyData.slice(0, Math.min(5, historyData.length));
+            let bigCount = 0, smallCount = 0;
+            availableResults.forEach(item => {
+                const bs = classifyBigSmall(item.number);
+                if (bs === 'BIG') bigCount++;
+                else if (bs === 'SMALL') smallCount++;
+            });
+            if (bigCount >= smallCount) return 'SMALL';
+            return 'BIG';
+        }
+
+        function calculateRate(historyData) {
+            if (!historyData || historyData.length < 6) return null;
+            let correctCount = 0, totalChecked = 0;
+            for (let i = 0; i < 3 && i + 5 < historyData.length; i++) {
+                const historyForPrediction = historyData.slice(i + 1);
+                const predictedValue = calculatePrediction(historyForPrediction);
+                const actualBigSmall = classifyBigSmall(historyData[i].number);
+                if (predictedValue && actualBigSmall) {
+                    if (predictedValue === actualBigSmall) correctCount++;
+                    totalChecked++;
+                }
+            }
+            if (totalChecked === 0) return null;
+            const pct = (correctCount / totalChecked) * 100;
+            return pct < 33 ? 'Low' : pct <= 66 ? 'Medium' : 'High';
+        }
+
+        function getNextPeriod(issueNum) {
+            if (!issueNum && issueNum !== 0) return '-';
+            try {
+                const s = String(issueNum).replace(/[^0-9]/g, '');
+                if (!s) return '-';
+                return (BigInt(s) + 1n).toString();
+            } catch (e) { return '-'; }
+        }
+
+        function startWingoCD() {
+            if (wingoCDInterval) clearInterval(wingoCDInterval);
+            wingoCDSec = 60;
+            const el = document.getElementById('wingoCD');
+            if (el) el.textContent = '60s';
+            wingoCDInterval = setInterval(() => {
+                wingoCDSec = Math.max(0, wingoCDSec - 1);
+                if (el) el.textContent = wingoCDSec + 's';
+                if (wingoCDSec <= 0) clearInterval(wingoCDInterval);
+            }, 1000);
+        }
+
+        function showPredictionSystemData(results) {
+            const sysEl = document.getElementById('predSystemContent');
+            const predEl = document.getElementById('predValue');
+            const nextEl = document.getElementById('predNextPeriod');
+            if (!results || results.length === 0 || !sysEl) return;
+            const nextPrediction = calculatePrediction(results);
+            const rate = calculateRate(results);
+            const last5 = results.slice(0, Math.min(5, results.length));
+            const analysisPattern = last5.map(r => classifyBigSmall(r.number)).filter(Boolean).join(' → ');
+            let sysHtml = '<div class="ck12-pred-system-content">';
+            sysHtml += '<div class="ck12-pred-system-row"><span class="ck12-pred-system-label">Analysis (Last 5 B/S)</span><span class="ck12-pred-system-value">' + (analysisPattern || '-') + '</span></div>';
+            sysHtml += '<div class="ck12-pred-system-row"><span class="ck12-pred-system-label">Next Prediction</span><span class="ck12-pred-system-value">' + (nextPrediction || '-') + '</span></div>';
+            sysHtml += '<div class="ck12-pred-system-row"><span class="ck12-pred-system-label">Accuracy Rate</span><span class="ck12-pred-system-value">' + (rate || '-') + '</span></div>';
+            sysHtml += '</div>';
+            sysEl.innerHTML = sysHtml;
+            if (predEl) predEl.textContent = nextPrediction || '-';
+            const latest = results[0];
+            const issueNum = latest.period ?? latest.issueNumber ?? latest.issue ?? latest.periodNumber;
+            if (nextEl) nextEl.textContent = getNextPeriod(issueNum);
+        }
+
+        function updatePredictionBox(results) {
+            const nextEl = document.getElementById('predNextPeriod');
+            const predEl = document.getElementById('predValue');
+            const sysEl = document.getElementById('predSystemContent');
+            if (predSystemTimeout) { clearTimeout(predSystemTimeout); predSystemTimeout = null; }
+            if (!results || results.length === 0) {
+                if (nextEl) nextEl.textContent = '-';
+                if (predEl) predEl.textContent = '-';
+                if (sysEl) sysEl.innerHTML = '<div class="ck12-pred-system-row"><span class="ck12-pred-system-label">No data</span></div>';
+                lastRenderedPeriodKey = null;
+                return;
+            }
+            const latest = results[0];
+            const issueNum = latest.period ?? latest.issueNumber ?? latest.issue ?? latest.periodNumber;
+            const periodKey = String(issueNum ?? '');
+            const isNewPeriod = periodKey && periodKey !== lastRenderedPeriodKey;
+            if (periodKey && periodKey !== lastPeriodKey) {
+                lastPeriodKey = periodKey;
+                startWingoCD();
+            }
+            if (nextEl) nextEl.textContent = getNextPeriod(issueNum);
+            if (isNewPeriod) {
+                if (sysEl) sysEl.innerHTML = '<div class="ck12-pred-system-loading">Analysis<span class="dots"><span></span><span></span><span></span></span></div>';
+                if (predEl) predEl.textContent = '...';
+                predSystemTimeout = setTimeout(function() {
+                    predSystemTimeout = null;
+                    lastRenderedPeriodKey = periodKey;
+                    showPredictionSystemData(results);
+                }, 450);
+            } else {
+                lastRenderedPeriodKey = periodKey;
+                showPredictionSystemData(results);
+            }
+        }
+
+        function renderTable(results) {
+            const wrap = document.getElementById('resultsTable');
+            if (!results || results.length === 0) {
+                wrap.innerHTML = '<div class="no-data">No data. Waiting for Firebase...</div>';
+                document.getElementById('bigCount').textContent = '0';
+                document.getElementById('smallCount').textContent = '0';
+                document.getElementById('totalCount').textContent = '0';
+                updatePredictionBox([]);
+                return;
+            }
+            const bigCount = results.filter(r => classifyBigSmall(r.number) === 'BIG').length;
+            const smallCount = results.filter(r => classifyBigSmall(r.number) === 'SMALL').length;
+            const totalCount = results.length;
+            document.getElementById('bigCount').textContent = bigCount;
+            document.getElementById('smallCount').textContent = smallCount;
+            document.getElementById('totalCount').textContent = totalCount;
+            updatePredictionBox(results);
+
+            let html = '<table><thead><tr><th>#</th><th>Period</th><th>Premium</th><th>Number</th><th>B/S</th><th>Win/Lose</th></tr></thead><tbody>';
+            results.forEach((r, i) => {
+                const bs = classifyBigSmall(r.number);
+                const periodRaw = (r.period ?? r.issueNumber ?? r.issue ?? r.periodNumber ?? '-').toString();
+                const periodNum = periodRaw.replace(/[^0-9]/g, '') || periodRaw;
+                const periodShort = periodNum.length > 5 ? periodNum.slice(-5) : (periodNum || '-');
+                const premium = (r.premium ?? r.hashValue ?? r.blockHashtag ?? '-').toString();
+                const premiumShort = premium.length > 8 ? premium.slice(-8) : premium;
+                const bsClass = bs === 'BIG' ? 'result-big' : (bs === 'SMALL' ? 'result-small' : '');
+                const historyForRow = results.slice(i + 1);
+                const predicted = calculatePrediction(historyForRow);
+                let winLoseHtml = '-';
+                if (predicted && bs) {
+                    winLoseHtml = predicted === bs ? '<span class="ck12-win">Win</span>' : '<span class="ck12-lose">Lose</span>';
+                }
+                html += `<tr><td>${i+1}</td><td class="period-num">${periodShort}</td><td>${premiumShort || '-'}</td><td>${r.number ?? '-'}</td><td class="${bsClass}">${bs || '-'}</td><td>${winLoseHtml}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            wrap.innerHTML = html;
+        }
+
+        function connectFirebase() {
+            if (!db && !initFirebase()) return;
+            if (firebaseListener) {
+                db.ref(FIREBASE_PATH).off('value', firebaseListener);
+                firebaseListener = null;
+            }
+            firebaseListener = db.ref(FIREBASE_PATH).on('value', snapshot => {
+                const data = snapshot.val();
+                if (data && data.list && Array.isArray(data.list)) {
+                    currentResults = data.list;
+                    renderTable(currentResults);
+                    const lu = document.getElementById('lastUpdate');
+                    lu.textContent = 'Last: ' + (data.publishedAt ? new Date(data.publishedAt).toLocaleString() : '-');
+                } else {
+                    renderTable([]);
+                }
+            });
+        }
+
+        document.getElementById('activateBtn').addEventListener('click', activateKey);
+        document.getElementById('keyInput').addEventListener('keyup', e => { if (e.key === 'Enter') activateKey(); });
+
+        if (expireTime && getServerTime() < expireTime && activatedKeyId) {
+            initLoginFirebase();
+            document.getElementById('gate').style.display = 'none';
+            document.getElementById('resultsContainer').classList.add('unlocked');
+            startSession();
+            startKeyMonitoring(activatedKeyId);
+        } else {
+            localStorage.removeItem('expireTime');
+            localStorage.removeItem('activatedKeyId');
+            activatedKeyId = null;
+        }
+
+        window.addEventListener('beforeunload', () => {
+            if (firebaseListener && db) db.ref(FIREBASE_PATH).off('value', firebaseListener);
+            if (keyStatusListener && loginDb && activatedKeyId) loginDb.ref('keys/' + activatedKeyId).off('value', keyStatusListener);
+            if (wingoCDInterval) clearInterval(wingoCDInterval);
+            if (predSystemTimeout) clearTimeout(predSystemTimeout);
+        });
+    </script>
+</body>
+</html>
