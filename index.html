@@ -260,10 +260,17 @@
             background: rgba(56, 189, 248, 0.04);
             border: 1px solid rgba(56, 189, 248, 0.2);
             border-radius: 12px;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: visible;
             margin-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
         }
-        .ck12-table-wrap table { width: 100%; border-collapse: collapse; }
+        .ck12-table-wrap table { width: 100%; border-collapse: collapse; table-layout: auto; }
+        .ck12-table-wrap th:last-child,
+        .ck12-table-wrap td:last-child {
+            min-width: 58px;
+            white-space: nowrap;
+        }
         .ck12-table-wrap th {
             padding: 14px 12px;
             background: rgba(56, 189, 248, 0.2);
@@ -530,6 +537,8 @@
             localStorage.removeItem('activatedKeyId');
             const keyToClean = activatedKeyId;
             activatedKeyId = null;
+            displayedHistory = [];
+            lastSeenLatestPeriodKey = null;
             if (firebaseListener && db) { db.ref(FIREBASE_PATH).off('value', firebaseListener); firebaseListener = null; }
             if (keyStatusListener && loginDb && keyToClean) {
                 loginDb.ref('keys/' + keyToClean).off('value', keyStatusListener);
@@ -671,26 +680,41 @@
             }
         }
 
-        function renderTable(results) {
+        let displayedHistory = [];
+        let lastSeenLatestPeriodKey = null;
+
+        function getPeriodKey(r) {
+            const v = r.period ?? r.issueNumber ?? r.issue ?? r.periodNumber ?? '';
+            return String(v);
+        }
+
+        function renderTable(fullResults, historyResults) {
             const wrap = document.getElementById('resultsTable');
-            if (!results || results.length === 0) {
+            if (!fullResults || fullResults.length === 0) {
                 wrap.innerHTML = '<div class="no-data">No data. Waiting for Firebase...</div>';
                 document.getElementById('bigCount').textContent = '0';
                 document.getElementById('smallCount').textContent = '0';
                 document.getElementById('totalCount').textContent = '0';
                 updatePredictionBox([]);
+                displayedHistory = [];
+                lastSeenLatestPeriodKey = null;
                 return;
             }
-            const bigCount = results.filter(r => classifyBigSmall(r.number) === 'BIG').length;
-            const smallCount = results.filter(r => classifyBigSmall(r.number) === 'SMALL').length;
-            const totalCount = results.length;
+            const bigCount = fullResults.filter(r => classifyBigSmall(r.number) === 'BIG').length;
+            const smallCount = fullResults.filter(r => classifyBigSmall(r.number) === 'SMALL').length;
+            const totalCount = fullResults.length;
             document.getElementById('bigCount').textContent = bigCount;
             document.getElementById('smallCount').textContent = smallCount;
             document.getElementById('totalCount').textContent = totalCount;
-            updatePredictionBox(results);
+            updatePredictionBox(fullResults);
 
+            const toShow = historyResults || [];
+            if (toShow.length === 0) {
+                wrap.innerHTML = '<div class="no-data">Waiting for next period...</div>';
+                return;
+            }
             let html = '<table><thead><tr><th>#</th><th>Period</th><th>Premium</th><th>Number</th><th>B/S</th><th>Win/Lose</th></tr></thead><tbody>';
-            results.forEach((r, i) => {
+            toShow.forEach((r, i) => {
                 const bs = classifyBigSmall(r.number);
                 const periodRaw = (r.period ?? r.issueNumber ?? r.issue ?? r.periodNumber ?? '-').toString();
                 const periodNum = periodRaw.replace(/[^0-9]/g, '') || periodRaw;
@@ -698,7 +722,8 @@
                 const premium = (r.premium ?? r.hashValue ?? r.blockHashtag ?? '-').toString();
                 const premiumShort = premium.length > 8 ? premium.slice(-8) : premium;
                 const bsClass = bs === 'BIG' ? 'result-big' : (bs === 'SMALL' ? 'result-small' : '');
-                const historyForRow = results.slice(i + 1);
+                const idxInFull = fullResults.findIndex(x => getPeriodKey(x) === getPeriodKey(r));
+                const historyForRow = idxInFull >= 0 ? fullResults.slice(idxInFull + 1) : [];
                 const predicted = calculatePrediction(historyForRow);
                 let winLoseHtml = '-';
                 if (predicted && bs) {
@@ -708,6 +733,23 @@
             });
             html += '</tbody></table>';
             wrap.innerHTML = html;
+        }
+
+        function processFirebaseData(data) {
+            const list = data && data.list && Array.isArray(data.list) ? data.list : [];
+            if (list.length === 0) {
+                renderTable([], []);
+                return;
+            }
+            const currentLatestKey = getPeriodKey(list[0]);
+            if (lastSeenLatestPeriodKey === null) {
+                lastSeenLatestPeriodKey = currentLatestKey;
+                displayedHistory = [];
+            } else if (currentLatestKey !== lastSeenLatestPeriodKey && list.length >= 2) {
+                displayedHistory = [list[1]].concat(displayedHistory);
+                lastSeenLatestPeriodKey = currentLatestKey;
+            }
+            renderTable(list, displayedHistory);
         }
 
         function connectFirebase() {
@@ -720,11 +762,11 @@
                 const data = snapshot.val();
                 if (data && data.list && Array.isArray(data.list)) {
                     currentResults = data.list;
-                    renderTable(currentResults);
+                    processFirebaseData(data);
                     const lu = document.getElementById('lastUpdate');
                     lu.textContent = 'Last: ' + (data.publishedAt ? new Date(data.publishedAt).toLocaleString() : '-');
                 } else {
-                    renderTable([]);
+                    renderTable([], []);
                 }
             });
         }
