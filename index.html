@@ -741,14 +741,27 @@
                 renderTable([], []);
                 return;
             }
-            const currentLatestKey = getPeriodKey(list[0]);
+
+            // Treat list[0] as the latest finished period result
+            const latestRecord = list[0];
+            const currentLatestKey = getPeriodKey(latestRecord);
+
+            if (!currentLatestKey) {
+                // Fallback: just render whatever history we currently have
+                renderTable(list, displayedHistory);
+                return;
+            }
+
             if (lastSeenLatestPeriodKey === null) {
+                // First load: show the latest finished period as the first history row
                 lastSeenLatestPeriodKey = currentLatestKey;
-                displayedHistory = [];
-            } else if (currentLatestKey !== lastSeenLatestPeriodKey && list.length >= 2) {
-                displayedHistory = [list[1]].concat(displayedHistory);
+                displayedHistory = [latestRecord];
+            } else if (currentLatestKey !== lastSeenLatestPeriodKey) {
+                // New period arrived: prepend the new latest result to history
+                displayedHistory = [latestRecord].concat(displayedHistory);
                 lastSeenLatestPeriodKey = currentLatestKey;
             }
+
             renderTable(list, displayedHistory);
         }
 
