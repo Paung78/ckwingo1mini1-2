@@ -6,35 +6,48 @@
     <title>CK Wingo 1 Mini V1.2 - Key Unlock</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --ck12-bg: #0f1419;
-            --ck12-surface: rgba(20, 28, 38, 0.94);
-            --ck12-accent: #38bdf8;
-            --ck12-accent-alt: #93c5fd;
-            --ck12-border: rgba(56, 189, 248, 0.3);
-            --ck12-text: #f0f9ff;
-            --ck12-muted: rgba(240, 249, 255, 0.7);
+            --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+            --bg: #f1f5f9;
+            --text: #0f172a;
+            --muted: #475569;
+            --surface: #ffffff;
+            --neumo-text: #2d3748;
+            --neumo-muted: #718096;
+            --neumo-sh-dark: rgba(163, 177, 198, 0.52);
+            --neumo-sh-light: rgba(255, 255, 255, 0.92);
+            --neumo-inset-sm: inset 3px 3px 6px var(--neumo-sh-dark), inset -3px -3px 6px var(--neumo-sh-light);
+            --ck-blue: #6366f1;
+            --text-ck: #4338ca;
+            --main-color: #6366f1;
+            --main-color-dark: #4f46e5;
+            --main-color-alpha-10: rgba(99, 102, 241, 0.12);
+            --main-color-alpha-20: rgba(99, 102, 241, 0.22);
+            --main-color-alpha-30: rgba(99, 102, 241, 0.32);
+            --yellow-accent: #ca8a04;
+            --shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--ck12-bg);
+            font-family: var(--font-sans);
+            background: var(--bg);
             background-image:
-                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(56, 189, 248, 0.12), transparent),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(147, 197, 253, 0.08), transparent);
+                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.07), transparent),
+                radial-gradient(ellipse 60% 40% at 85% 100%, rgba(79, 70, 229, 0.05), transparent);
             min-height: 100vh;
-            color: var(--ck12-text);
+            color: var(--text);
             padding: 20px;
             padding-top: calc(20px + env(safe-area-inset-top));
             padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            -webkit-font-smoothing: antialiased;
         }
-
-        /* ========== V1.2 Key Unlock Gate - CK distinct design ========== */
         #gate {
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
@@ -42,88 +55,86 @@
             position: fixed;
             inset: 0;
             z-index: 9999;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse 80% 50% at 50% 0%, rgba(99, 102, 241, 0.08), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(79, 70, 229, 0.05), transparent);
         }
         .ck12-unlock-card {
             width: min(420px, 100%);
             padding: 40px 32px;
-            background: var(--ck12-surface);
-            border: 1px solid var(--ck12-border);
+            background: var(--surface);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 24px;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(56, 189, 248, 0.1);
+            box-shadow: var(--shadow), 0 0 0 1px rgba(99, 102, 241, 0.06);
             text-align: center;
         }
         .ck12-unlock-logo {
             font-size: 3rem;
             font-weight: 900;
             letter-spacing: -0.04em;
-            color: var(--ck12-accent);
+            color: var(--ck-blue);
             margin-bottom: 12px;
         }
-        .ck12-unlock-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--ck12-text);
-            margin-bottom: 6px;
-        }
-        .ck12-unlock-sub {
-            font-size: 0.9rem;
-            color: var(--ck12-muted);
-            margin-bottom: 28px;
-            font-weight: 500;
-        }
+        .ck12-unlock-title { font-size: 1rem; font-weight: 700; color: var(--neumo-text); margin-bottom: 6px; }
+        .ck12-unlock-sub { font-size: 0.9rem; color: var(--neumo-muted); margin-bottom: 28px; font-weight: 500; }
         .ck12-input-wrap { margin-bottom: 20px; }
         .ck12-key-input {
             width: 100%;
             padding: 16px 20px;
-            background: rgba(56, 189, 248, 0.06);
-            border: 1px solid var(--ck12-border);
+            background: var(--surface);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 14px;
-            color: var(--ck12-text);
+            color: var(--neumo-text);
             font-size: 1rem;
-            font-family: 'Outfit', monospace;
+            font-family: var(--font-sans);
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: var(--neumo-inset-sm);
         }
-        .ck12-key-input::placeholder { color: rgba(240, 249, 255, 0.4); }
+        .ck12-key-input::placeholder { color: var(--neumo-muted); }
         .ck12-key-input:focus {
             outline: none;
-            border-color: var(--ck12-accent);
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+            border-color: var(--ck-blue);
+            box-shadow: 0 0 0 3px var(--main-color-alpha-20);
         }
         .ck12-activate-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, var(--ck12-accent), #0ea5e9);
+            background: linear-gradient(145deg, #6b6ff7 0%, #5a5fef 50%, #4f46e5 100%);
             border: none;
             border-radius: 14px;
             color: #fff;
             font-size: 0.95rem;
             font-weight: 700;
-            font-family: 'Outfit', sans-serif;
+            font-family: var(--font-sans);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 6px 6px 14px rgba(79, 70, 229, 0.28), -4px -4px 12px rgba(255, 255, 255, 0.35);
         }
         .ck12-activate-btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
         }
         .ck12-activate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .ck12-timer {
             margin-top: 20px;
             padding: 14px;
-            background: rgba(56, 189, 248, 0.1);
+            background: var(--main-color-alpha-10);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 12px;
             font-weight: 700;
-            color: var(--ck12-accent);
+            color: var(--main-color-dark);
             display: none;
         }
         .ck12-success {
             margin-top: 16px;
             padding: 12px;
-            background: rgba(56, 189, 248, 0.15);
+            background: var(--main-color-alpha-10);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 12px;
-            color: var(--ck12-accent);
+            color: var(--text-ck);
             font-size: 0.9rem;
             font-weight: 600;
             display: none;
@@ -134,26 +145,25 @@
             align-items: center;
             gap: 8px;
             padding: 12px 24px;
-            background: rgba(56, 189, 248, 0.12);
-            border: 1px solid var(--ck12-border);
+            background: var(--main-color-alpha-10);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 12px;
-            color: var(--ck12-accent);
+            color: var(--main-color-dark);
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
-            transition: all 0.2s;
+            transition: background 0.2s ease;
         }
-        .ck12-telegram a:hover { background: rgba(56, 189, 248, 0.2); }
-
-        /* ========== Results Container - Ck30 style ========== */
+        .ck12-telegram a:hover { background: var(--main-color-alpha-20); }
         .results-container {
             display: none;
             max-width: 900px;
             margin: 0 auto;
             padding: 16px;
-            background: rgba(20, 28, 38, 0.9);
+            background: var(--surface);
             border-radius: 16px;
-            border: 1px solid rgba(56, 189, 248, 0.2);
+            border: 1px solid var(--main-color-alpha-30);
+            box-shadow: var(--shadow);
             position: relative;
         }
         .results-container.unlocked { display: block; animation: ck12-fadeIn 0.3s ease; }
@@ -169,43 +179,43 @@
         .results-container h1 {
             font-size: clamp(1.2rem, 3.5vw, 1.6rem);
             font-weight: 700;
-            color: var(--ck12-accent);
+            color: var(--ck-blue);
             margin-bottom: 4px;
         }
-        .results-container .ck12-subtitle { color: #ffffff; font-size: 0.9rem; font-weight: 500; }
+        .results-container .ck12-subtitle { color: var(--muted); font-size: 0.9rem; font-weight: 500; }
         .results-time-badge {
             position: absolute;
             top: 16px;
             right: 16px;
             padding: 8px 14px;
-            background: rgba(56, 189, 248, 0.12);
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            background: var(--main-color-alpha-10);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 10px;
             font-weight: 700;
             font-size: 0.9rem;
-            color: var(--ck12-accent);
+            color: var(--main-color-dark);
             white-space: nowrap;
             display: none;
         }
         .results-time-badge.visible { display: block; }
-        .ck12-anim-logo { font-size: 2rem; font-weight: 900; color: var(--ck12-accent); }
+        .ck12-anim-logo { font-size: 2rem; font-weight: 900; letter-spacing: -0.06em; color: var(--ck-blue); margin-bottom: 4px; }
         .ck12-bst-box {
             display: flex;
             align-items: center;
             justify-content: space-around;
             padding: 14px 20px;
-            background: rgba(56, 189, 248, 0.06);
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            background: var(--main-color-alpha-10);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 12px;
             margin-bottom: 20px;
         }
         .ck12-bst-item { text-align: center; }
-        .ck12-bst-label { font-size: 0.7rem; color: #ffffff; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
-        .ck12-bst-value { font-size: 1.4rem; font-weight: 800; color: #ffffff; }
+        .ck12-bst-label { font-size: 0.7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+        .ck12-bst-value { font-size: 1.4rem; font-weight: 800; color: var(--neumo-text); }
         .ck12-pred-box {
             padding: 16px;
-            background: rgba(56, 189, 248, 0.06);
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            background: var(--main-color-alpha-10);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 12px;
             margin-bottom: 20px;
         }
@@ -214,22 +224,36 @@
             align-items: center;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid rgba(56, 189, 248, 0.1);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.12);
         }
         .ck12-pred-row:last-child { border-bottom: none; }
-        .ck12-pred-label { font-size: 0.8rem; color: #ffffff; font-weight: 600; }
-        .ck12-pred-value { font-size: 0.95rem; font-weight: 700; color: #ffffff; font-family: monospace; }
+        .ck12-pred-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+        .ck12-pred-value { font-size: 0.95rem; font-weight: 700; color: var(--neumo-text); font-family: ui-monospace, monospace; }
         .ck12-pred-system-box {
             padding: 16px;
-            background: rgba(56, 189, 248, 0.06);
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            background: var(--main-color-alpha-10);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 12px;
             margin-bottom: 20px;
         }
-        .ck12-pred-system-title { font-size: 0.9rem; font-weight: 700; color: #ffffff; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); }
-        .ck12-pred-system-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.85rem; color: #ffffff; }
-        .ck12-pred-system-label { font-weight: 600; }
-        .ck12-pred-system-value { font-family: monospace; }
+        .ck12-pred-system-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--neumo-text);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--main-color-alpha-30);
+        }
+        .ck12-pred-system-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 0.85rem;
+            color: var(--neumo-text);
+            gap: 10px;
+        }
+        .ck12-pred-system-label { font-weight: 600; color: var(--muted); }
+        .ck12-pred-system-value { font-family: ui-monospace, monospace; font-weight: 600; }
         .ck12-pred-system-loading {
             display: flex;
             align-items: center;
@@ -237,13 +261,15 @@
             gap: 6px;
             padding: 24px;
             font-size: 0.95rem;
-            color: rgba(255,255,255,0.9);
+            color: var(--muted);
             font-weight: 600;
         }
         .ck12-pred-system-loading .dots { display: inline-flex; gap: 4px; }
         .ck12-pred-system-loading .dots span {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: var(--ck12-accent);
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--ck-blue);
             animation: ck12-dot 1.4s ease-in-out infinite;
         }
         .ck12-pred-system-loading .dots span:nth-child(1) { animation-delay: 0s; }
@@ -254,52 +280,51 @@
             40% { opacity: 1; transform: scale(1.1); }
         }
         .ck12-pred-system-content { animation: ck12-fadeIn 0.4s ease; }
-        .ck12-win { color: #22c55e; font-weight: 700; }
-        .ck12-lose { color: #ef4444; font-weight: 700; }
+        .ck12-win { color: #15803d; font-weight: 700; }
+        .ck12-lose { color: #dc2626; font-weight: 700; }
         .ck12-table-wrap {
-            background: rgba(56, 189, 248, 0.04);
-            border: 1px solid rgba(56, 189, 248, 0.2);
+            background: var(--surface);
+            border: 1px solid var(--main-color-alpha-30);
             border-radius: 12px;
             overflow-x: auto;
             overflow-y: visible;
             margin-bottom: 20px;
+            box-shadow: var(--neumo-inset-sm);
             -webkit-overflow-scrolling: touch;
         }
         .ck12-table-wrap table { width: 100%; border-collapse: collapse; table-layout: auto; }
         .ck12-table-wrap th:last-child,
-        .ck12-table-wrap td:last-child {
-            min-width: 58px;
-            white-space: nowrap;
-        }
+        .ck12-table-wrap td:last-child { min-width: 58px; white-space: nowrap; }
         .ck12-table-wrap th {
             padding: 14px 12px;
-            background: rgba(56, 189, 248, 0.2);
-            color: #ffffff;
+            background: linear-gradient(145deg, #eef2ff 0%, #e0e7ff 100%);
+            color: var(--main-color-dark);
             font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             text-align: left;
+            border-bottom: 1px solid var(--main-color-alpha-20);
         }
         .ck12-table-wrap td {
             padding: 12px;
-            border-top: 1px solid rgba(56, 189, 248, 0.12);
+            border-top: 1px solid rgba(15, 23, 42, 0.06);
             font-size: 0.85rem;
-            color: #ffffff;
+            color: var(--neumo-text);
         }
-        .ck12-table-wrap tbody tr:hover { background: rgba(56, 189, 248, 0.1); }
-        .ck12-table-wrap .period-num { font-weight: 700; color: #ffffff; }
-        .ck12-table-wrap .result-big { color: #ffffff; font-weight: 700; }
-        .ck12-table-wrap .result-small { color: #ffffff; font-weight: 700; }
-        .ck12-last-update { text-align: center; font-size: 0.8rem; color: #ffffff; padding: 12px; }
-        .no-data { text-align: center; padding: 40px 20px; color: #ffffff; }
-
+        .ck12-table-wrap tbody tr:hover { background: var(--main-color-alpha-10); }
+        .ck12-table-wrap .period-num { font-weight: 700; color: var(--text); }
+        .ck12-table-wrap .result-big { color: var(--yellow-accent); font-weight: 700; }
+        .ck12-table-wrap .result-small { color: var(--main-color-dark); font-weight: 700; }
+        .ck12-last-update { text-align: center; font-size: 0.8rem; color: var(--muted); padding: 12px; font-weight: 600; }
+        .no-data { text-align: center; padding: 40px 20px; color: var(--neumo-muted); font-weight: 500; }
         #status { display: none; padding: 12px; margin-bottom: 16px; border-radius: 12px; }
-        #status.loading { background: rgba(147, 197, 253, 0.1); color: var(--ck12-accent-alt); }
-        #status.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-
-        @media (max-width: 600px) {
+        #status.loading { background: var(--main-color-alpha-10); color: var(--main-color-dark); }
+        #status.error { background: rgba(220, 38, 38, 0.08); color: #dc2626; }
+        @media (max-width: 768px) {
             .ck12-unlock-card { padding: 28px 20px; }
+        }
+        @media (max-width: 600px) {
             .ck12-table-wrap th, .ck12-table-wrap td { padding: 10px 8px; font-size: 0.75rem; }
             .ck12-key-input { letter-spacing: 0.08em; }
             .results-header { flex-direction: column; align-items: flex-start; }
@@ -825,6 +850,7 @@
             localStorage.removeItem('expireTime');
             localStorage.removeItem('activatedKeyId');
             activatedKeyId = null;
+            document.getElementById('gate').style.display = 'flex';
         }
 
         window.addEventListener('beforeunload', () => {
