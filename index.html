@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>CK Wingo 1 Mini V1.2 - Key Unlock</title>
+    <title>SuperSel Earning – Ck WinGo 1 Mini V1.2</title>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -61,34 +61,33 @@
                 radial-gradient(ellipse 60% 40% at 80% 100%, rgba(79, 70, 229, 0.05), transparent);
         }
         .ck12-unlock-card {
-            width: min(420px, 100%);
-            padding: 40px 32px;
-            background: var(--surface);
-            border: 1px solid var(--main-color-alpha-30);
-            border-radius: 24px;
-            box-shadow: var(--shadow), 0 0 0 1px rgba(99, 102, 241, 0.06);
+            width: min(480px, 100%);
+            padding: clamp(28px, 6vw, 48px);
+            background: #e4e9f0;
+            border: none;
+            border-radius: 28px;
+            box-shadow: 6px 6px 12px rgba(163, 177, 198, 0.52), -6px -6px 12px rgba(255, 255, 255, 0.92);
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 18px;
         }
-        .ck12-unlock-logo {
-            font-size: 3rem;
-            font-weight: 900;
-            letter-spacing: -0.04em;
-            color: var(--ck-blue);
-            margin-bottom: 12px;
-        }
-        .ck12-unlock-title { font-size: 1rem; font-weight: 700; color: var(--neumo-text); margin-bottom: 6px; }
-        .ck12-unlock-sub { font-size: 0.9rem; color: var(--neumo-muted); margin-bottom: 28px; font-weight: 500; }
+        .brand-red { color: #dc2626; }
+        .brand-black { color: #111827; }
+        .ck12-unlock-title { font-size: clamp(1rem, 3.2vw, 1.25rem); font-weight: 700; color: var(--neumo-text); margin-bottom: 4px; text-align: left; letter-spacing: 0.04em; }
+        .ck12-unlock-sub { font-size: 0.8rem; color: var(--neumo-muted); margin-bottom: 8px; font-weight: 600; text-align: left; letter-spacing: 0.05em; }
         .ck12-input-wrap { margin-bottom: 20px; }
         .ck12-key-input {
             width: 100%;
-            padding: 16px 20px;
-            background: var(--surface);
-            border: 1px solid var(--main-color-alpha-30);
-            border-radius: 14px;
+            padding: 18px 22px;
+            background: #ffffff;
+            border: 2px solid var(--main-color-alpha-30);
+            border-radius: 18px;
             color: var(--neumo-text);
             font-size: 1rem;
             font-family: var(--font-sans);
-            letter-spacing: 0.15em;
+            letter-spacing: 0.3em;
             text-transform: uppercase;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
             box-shadow: var(--neumo-inset-sm);
@@ -101,15 +100,17 @@
         }
         .ck12-activate-btn {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             background: linear-gradient(145deg, #6b6ff7 0%, #5a5fef 50%, #4f46e5 100%);
             border: none;
-            border-radius: 14px;
+            border-radius: 18px;
             color: #fff;
             font-size: 0.95rem;
             font-weight: 700;
             font-family: var(--font-sans);
             cursor: pointer;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 6px 6px 14px rgba(79, 70, 229, 0.28), -4px -4px 12px rgba(255, 255, 255, 0.35);
         }
@@ -197,9 +198,7 @@
             white-space: nowrap;
             display: none;
         }
-        .results-time-badge.visible { display: block; }
-        .ck12-anim-logo { font-size: 2rem; font-weight: 900; letter-spacing: -0.06em; color: var(--ck-blue); margin-bottom: 4px; }
-        .ck12-bst-box {
+        .results-time-badge.visible { display: block; }        .ck12-bst-box {
             display: flex;
             align-items: center;
             justify-content: space-around;
@@ -334,12 +333,11 @@
         }
     </style>
 </head>
-<body>
+<body class="light-mode">
     <section id="gate">
         <div class="ck12-unlock-card">
-            <div class="ck12-unlock-logo">LT</div>
-            <div class="ck12-unlock-title">Lottery Tricks Ai Perdition</div>
-            <div class="ck12-unlock-sub">Ck Lottery WinGo1 Prediction</div>
+            <div class="ck12-unlock-title"><span class="brand-red">SuperSel</span> <span class="brand-black">Earing</span></div>
+            <div class="ck12-unlock-sub">CkWinGo1MiniV1.2</div>
             <div class="ck12-input-wrap">
                 <input type="text" id="keyInput" class="ck12-key-input" placeholder="ENTER ACCESS KEY" autocomplete="off">
             </div>
@@ -348,20 +346,14 @@
             </button>
             <div id="keyTimer" class="ck12-timer"></div>
             <div id="keySuccess" class="ck12-success">Access Granted</div>
-            <div class="ck12-telegram">
-                <a href="https://t.me/LotteryTricksAiPrediction" target="_blank">
-                    <i class="fab fa-telegram"></i> JOIN TELEGRAM
-                </a>
-            </div>
         </div>
     </section>
 
     <div class="results-container" id="resultsContainer">
         <div class="results-header">
             <div class="results-header-left">
-                <div class="ck12-anim-logo">LT</div>
-                <h1>Lottery Tricks Ai Perdition</h1>
-                <p class="ck12-subtitle">Ck Lottery WinGo1 - Prediction</p>
+                <h1><span class="brand-red">SuperSel</span> <span class="brand-black">Earing</span></h1>
+                <p class="ck12-subtitle">CkWinGo1MiniV1.2</p>
             </div>
             <div id="resultsTimeRemaining" class="results-time-badge"></div>
         </div>
@@ -602,7 +594,7 @@
             // historyData: [latest, older, older, ...]
             if (!historyData || historyData.length < 3) return null;
 
-            // 1) နောက်ဆုံး 3 ပွဲ trend ရှိရင် အဲဒီဘက်ကို follow
+            // 1) á€”á€±á€¬á€€á€ºá€†á€¯á€¶á€¸ 3 á€•á€½á€² trend á€›á€¾á€­á€›á€„á€º á€¡á€²á€’á€®á€˜á€€á€ºá€€á€­á€¯ follow
             const last3 = historyData.slice(0, Math.min(3, historyData.length));
             const bsLast3 = last3
                 .map(item => classifyBigSmall(item.number))
@@ -611,31 +603,31 @@
             if (bsLast3.length === 3 &&
                 bsLast3[0] === bsLast3[1] &&
                 bsLast3[1] === bsLast3[2]) {
-                // နောက်ဆုံး 3 ပွဲတိုင်တာ BIG / SMALL တစ်မျိုးတည်း
+                // á€”á€±á€¬á€€á€ºá€†á€¯á€¶á€¸ 3 á€•á€½á€²á€á€­á€¯á€„á€ºá€á€¬ BIG / SMALL á€á€…á€ºá€™á€»á€­á€¯á€¸á€á€Šá€ºá€¸
                 return bsLast3[0]; // 'BIG' or 'SMALL'
             }
 
-            // 2) Trend မရှင်းရင် weighted vote (နောက်ဆုံး 8 ပွဲအထိ)
+            // 2) Trend á€™á€›á€¾á€„á€ºá€¸á€›á€„á€º weighted vote (á€”á€±á€¬á€€á€ºá€†á€¯á€¶á€¸ 8 á€•á€½á€²á€¡á€‘á€­)
             const windowSize = Math.min(8, historyData.length);
             const recent = historyData.slice(0, windowSize);
 
             let bigScore = 0;
             let smallScore = 0;
 
-            // index 0 = latest ⇒ အမြင့်ဆုံး weight
+            // index 0 = latest â‡’ á€¡á€™á€¼á€„á€·á€ºá€†á€¯á€¶á€¸ weight
             for (let i = 0; i < recent.length; i++) {
                 const item = recent[i];
                 const bs = classifyBigSmall(item.number);
                 if (!bs) continue;
 
-                const weight = recent.length - i; // latest ပွဲ weight အများဆုံး
+                const weight = recent.length - i; // latest á€•á€½á€² weight á€¡á€™á€»á€¬á€¸á€†á€¯á€¶á€¸
                 if (bs === 'BIG') bigScore += weight;
                 else if (bs === 'SMALL') smallScore += weight;
             }
 
             if (bigScore === 0 && smallScore === 0) return null;
 
-            // Weight ပိုများတဲ့ဘက်ကို follow
+            // Weight á€•á€­á€¯á€™á€»á€¬á€¸á€á€²á€·á€˜á€€á€ºá€€á€­á€¯ follow
             return bigScore > smallScore ? 'BIG' : 'SMALL';
         }
 
@@ -685,7 +677,7 @@
             const nextPrediction = calculatePrediction(results);
             const rate = calculateRate(results);
             const last5 = results.slice(0, Math.min(5, results.length));
-            const analysisPattern = last5.map(r => classifyBigSmall(r.number)).filter(Boolean).join(' → ');
+            const analysisPattern = last5.map(r => classifyBigSmall(r.number)).filter(Boolean).join(' â†’ ');
             let sysHtml = '<div class="ck12-pred-system-content">';
             sysHtml += '<div class="ck12-pred-system-row"><span class="ck12-pred-system-label">Analysis (Last 5 B/S)</span><span class="ck12-pred-system-value">' + (analysisPattern || '-') + '</span></div>';
             sysHtml += '<div class="ck12-pred-system-row"><span class="ck12-pred-system-label">Next Prediction</span><span class="ck12-pred-system-value">' + (nextPrediction || '-') + '</span></div>';
@@ -862,3 +854,4 @@
     </script>
 </body>
 </html>
+
